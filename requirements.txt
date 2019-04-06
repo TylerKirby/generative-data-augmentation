@@ -1,0 +1,10 @@
+jupyter
+pandas
+numpy
+sklearn
+scipy
+tensorflow==2.0.0-alpha0 
+jupyterlab
+matplotlib
+seaborn
+opencv-python
