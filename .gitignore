@@ -2,3 +2,5 @@ data/
 venv/
 .ipynb_checkpoints/
 .vscode/
+test/
+train/
