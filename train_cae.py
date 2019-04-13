@@ -11,9 +11,18 @@ def encoder(x):
     x = layers.MaxPool2D((2, 2), padding='same')(x)
     x = layers.Conv2D(8, (3, 3), activation='relu', padding='same')(x)
     x = layers.MaxPool2D((2, 2), padding='same')(x)
+    x = layers.Flatten()(x)
+    x = layers.Dense(16, input_dim=128, activation='relu')(x)
     return x
 
+def build_encoder():
+    i = layers.Input(shape=(32,32,3))
+    o = encoder(i)
+    return tf.keras.Model(i, o, name='encoder')
+
 def decoder(x):
+    x = layers.Dense(128, activation='relu')(x)
+    x = layers.Reshape((4, 4, 8))(x)
     x = layers.Conv2D(8, (3, 3), activation='relu', padding='same')(x)
     x = layers.UpSampling2D((2, 2))(x)
     x = layers.Conv2D(8, (3, 3), activation='relu', padding='same')(x)
@@ -23,22 +32,32 @@ def decoder(x):
     x = layers.Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
     return x
 
+def build_decoder():
+    i = layers.Input(shape=(16,))
+    o = decoder(i)
+    return tf.keras.Model(i, o, name='decoder')
+
 def autoencoder():
-    i = layers.Input(shape=(32,32,3))
-    encoded = encoder(i)
-    decoded = decoder(encoded)
-    return tf.keras.Model(i, decoded)
+    encoder = build_encoder()
+    decoder = build_decoder()
+    encoder.summary()
+    decoder.summary()
+    autoencoder = tf.keras.models.Sequential()
+    autoencoder.add(encoder)
+    autoencoder.add(decoder)
+    return autoencoder
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--version', '-v', type=int, required=True)
-    parser.add_argument('--epochs', '-e', type=int, default=50)
+    parser.add_argument('--version', '-v', type=int, required=True)
+    parser.add_argument('--epochs', '-e', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--image_size', type=int, default=32)
     parser.add_argument('--latent_vector_size', type=int, default=16)
     args = parser.parse_args()
 
     autoencoder = autoencoder()
+    autoencoder.summary()
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
     train_data_generator = ImageDataGenerator(rescale=1./255)
@@ -57,8 +76,6 @@ if __name__ == "__main__":
         batch_size=16
     )
 
-    print(training_data.next()[1].shape)
-
     autoencoder.fit_generator(
         training_data,
         steps_per_epoch=10,
@@ -66,3 +83,6 @@ if __name__ == "__main__":
     )
 
     autoencoder.save_weights(f'autoencoder_weights_v{args.version}.h5')
+
+    with open(f'autoencoder_architecture_v{args.version}.json', 'w') as f:
+        f.write(autoencoder.to_json())
