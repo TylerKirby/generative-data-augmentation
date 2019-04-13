@@ -63,8 +63,6 @@ if __name__ == "__main__":
 
     generator = build_generator()
     discriminator = build_discriminator()
-
-    generator.summary()
     
     generator.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
     discriminator.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
@@ -73,20 +71,28 @@ if __name__ == "__main__":
     dcgan.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
 
     for i in range(args.epochs):
+        print(f'epoch {i}')
         noise = np.random.rand(args.batch_size, 100)
         real_image_batch = real_images.next()
         generated_images = generator.predict(noise, batch_size=args.batch_size)
         X = np.concatenate([generated_images, real_image_batch])
         y = [0]*args.batch_size + [1]*args.batch_size
         discriminator.trainable = True
-        discriminator.train_on_batch(X, y)
+        discriminator_loss = discriminator.train_on_batch(X, y)
+        print(f'discriminator loss: {discriminator_loss}')
         noise = np.random.rand(args.batch_size, 100)
         y_generator = [1]*args.batch_size
         discriminator.trainable = False
-        dcgan.train_on_batch(noise, y_generator)
+        dcgan_loss = dcgan.train_on_batch(noise, y_generator)
+        print(f'dcgan loss: {dcgan_loss}')
+        print('='*15)
 
     generator.save_weights(f'dcgan_generator_weights_v{args.version}.h5')
+    with open(f'dcgan_generator_architecture_v{args.version}.json', 'w') as f:
+        f.write(generator.to_json())
     discriminator.save_weights(f'dcgan_discriminator_weights_v{args.version}.h5')
+    with open(f'dcgan_discriminator__architecture_v{args.version}.json', 'w') as f:
+        f.write(discriminator.to_json())
 
     print('finished training')
 
