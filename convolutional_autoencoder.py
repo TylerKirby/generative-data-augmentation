@@ -31,6 +31,7 @@ def autoencoder():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--version', type=int, required=True)
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--image_size', type=int, default=32)
     parser.add_argument('--latent_vector_size', type=int, default=16)
@@ -60,3 +61,5 @@ if __name__ == "__main__":
         steps_per_epoch=10,
         epochs=2
     )
+
+    autoencoder.save_weights('autoencoder_weights_v{args.version}.h5')

@@ -49,6 +49,7 @@ def build_dcgan(generator, discriminator):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--version', '-v', type=int, required=True)
     parser.add_argument('--epochs', '-e', type=int, default=1)
     parser.add_argument('--batch_size', '-bs', type=int, default=5)
     args = parser.parse_args()
@@ -81,6 +82,9 @@ if __name__ == "__main__":
         y_generator = [1]*args.batch_size
         discriminator.trainable = False
         dcgan.train_on_batch(noise, y_generator)
+
+    generator.save_weights(f'dcgan_generator_weights_v{args.version}.h5')
+    discriminator.save_weights(f'dcgan_discriminator_weights_v{args.version}.h5')
 
     print('finished training')
 
