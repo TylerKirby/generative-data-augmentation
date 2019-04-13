@@ -29,13 +29,11 @@ def sampling(args):
         z (tensor): sampled latent vector
     """
 
-    z_mean, z_log_var = args
-    batch = K.shape(z_mean)[0]
-   
-    dim = K.int_shape(z_mean)[1] 
+    z_mean, z_log_var = args 
+    
 	
     # by default, random_normal has mean = 0 and std = 1.0
-    epsilon = K.random_normal(shape=(batch, dim))
+    epsilon = K.random_normal(shape=(32, 16))
     return z_mean + K.exp(0.5 * z_log_var) * epsilon
 
 
@@ -177,12 +175,12 @@ if __name__ == '__main__':
     if args.weights:
         vae.load_weights(args.weights)
     else:
-        # train the autoencoder
-        vae.fit(x_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                validation_data=(x_test, None))
-        vae.save_weights('vae_mlp_mnist.h5')
+        
+        vae.fit_generator(
+        x_train,
+        steps_per_epoch=10,
+        epochs=2
+    )
 
     plot_results(models,
                  data,
