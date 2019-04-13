@@ -2,16 +2,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.layers import Lambda, Input, Dense
-from keras.models import Model
+
+import tensorflow as tf
+from tensorflow.keras.layers import Lambda, Input, Dense
+from tensorflow.keras.models import Model
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from keras.losses import mse, binary_crossentropy
-from keras.utils import plot_model
-from keras import backend as K
+from tensorflow.keras.losses import mse, binary_crossentropy
+from tensorflow.keras.utils import plot_model
+from tensorflow.keras import backend as K
 
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import argparse
 import os
 
@@ -55,13 +57,13 @@ def plot_results(models,
     # display a 2D plot of the digit classes in the latent space
     z_mean, _, _ = encoder.predict(x_test,
                                    batch_size=batch_size)
-    plt.figure(figsize=(12, 10))
-    plt.scatter(z_mean[:, 0], z_mean[:, 1], c=y_test)
-    plt.colorbar()
-    plt.xlabel("z[0]")
-    plt.ylabel("z[1]")
-    plt.savefig(filename)
-    plt.show()
+    # plt.figure(figsize=(12, 10))
+    # plt.scatter(z_mean[:, 0], z_mean[:, 1], c=y_test)
+    # plt.colorbar()
+    # plt.xlabel("z[0]")
+    # plt.ylabel("z[1]")
+    # plt.savefig(filename)
+    # plt.show()
 
     filename = os.path.join(model_name, "digits_over_latent.png")
     # display a 30x30 2D manifold of digits
@@ -81,19 +83,19 @@ def plot_results(models,
             figure[i * digit_size: (i + 1) * digit_size,
                    j * digit_size: (j + 1) * digit_size] = digit
 
-    plt.figure(figsize=(10, 10))
-    start_range = digit_size // 2
-    end_range = (n - 1) * digit_size + start_range + 1
-    pixel_range = np.arange(start_range, end_range, digit_size)
-    sample_range_x = np.round(grid_x, 1)
-    sample_range_y = np.round(grid_y, 1)
-    plt.xticks(pixel_range, sample_range_x)
-    plt.yticks(pixel_range, sample_range_y)
-    plt.xlabel("z[0]")
-    plt.ylabel("z[1]")
-    plt.imshow(figure, cmap='Greys_r')
-    plt.savefig(filename)
-    plt.show()
+    # plt.figure(figsize=(10, 10))
+    # start_range = digit_size // 2
+    # end_range = (n - 1) * digit_size + start_range + 1
+    # pixel_range = np.arange(start_range, end_range, digit_size)
+    # sample_range_x = np.round(grid_x, 1)
+    # sample_range_y = np.round(grid_y, 1)
+    # plt.xticks(pixel_range, sample_range_x)
+    # plt.yticks(pixel_range, sample_range_y)
+    # plt.xlabel("z[0]")
+    # plt.ylabel("z[1]")
+    # plt.imshow(figure, cmap='Greys_r')
+    # plt.savefig(filename)
+    # plt.show()
 
 train_data_generator = ImageDataGenerator(rescale=1./255)
 test_data_generator = ImageDataGenerator(rescale=1./255)
@@ -115,7 +117,7 @@ epochs = 50
 
 # VAE model = encoder + decoder
 # build encoder model
-inputs = Input(shape=input_shape, name='encoder_input')
+inputs = Input(shape=(16,32,32,3), name='encoder_input')
 x = Dense(intermediate_dim, activation='relu')(inputs)
 z_mean = Dense(latent_dim, name='z_mean')(x)
 z_log_var = Dense(latent_dim, name='z_log_var')(x)
@@ -127,7 +129,7 @@ z = Lambda(sampling, output_shape=(latent_dim,), name='z')([z_mean, z_log_var])
 # instantiate encoder model
 encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
 encoder.summary()
-plot_model(encoder, to_file='vae_mlp_encoder.png', show_shapes=True)
+# plot_model(encoder, to_file='vae_mlp_encoder.png', show_shapes=True)
 
 # build decoder model
 latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
@@ -137,7 +139,7 @@ outputs = Dense(original_dim, activation='sigmoid')(x)
 # instantiate decoder model
 decoder = Model(latent_inputs, outputs, name='decoder')
 decoder.summary()
-plot_model(decoder, to_file='vae_mlp_decoder.png', show_shapes=True)
+# plot_model(decoder, to_file='vae_mlp_decoder.png', show_shapes=True)
 
 # instantiate VAE model
 outputs = decoder(encoder(inputs)[2])
@@ -170,9 +172,9 @@ if __name__ == '__main__':
     vae.add_loss(vae_loss)
     vae.compile(optimizer='adam')
     vae.summary()
-    plot_model(vae,
-               to_file='vae_mlp.png',
-               show_shapes=True)
+    # plot_model(vae,
+    #            to_file='vae_mlp.png',
+    #            show_shapes=True)
 
     if args.weights:
         vae.load_weights(args.weights)
