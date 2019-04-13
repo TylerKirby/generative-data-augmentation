@@ -5,3 +5,4 @@ venv/
 test/
 train/
 images_to_spoof/
+__pycache__
