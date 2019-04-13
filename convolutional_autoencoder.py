@@ -31,7 +31,8 @@ def autoencoder():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', type=int, required=True)
+    # parser.add_argument('--version', '-v', type=int, required=True)
+    parser.add_argument('--epochs', '-e', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--image_size', type=int, default=32)
     parser.add_argument('--latent_vector_size', type=int, default=16)
@@ -56,10 +57,12 @@ if __name__ == "__main__":
         batch_size=16
     )
 
+    print(training_data.next()[1].shape)
+
     autoencoder.fit_generator(
         training_data,
         steps_per_epoch=10,
-        epochs=2
+        epochs=args.epochs
     )
 
-    autoencoder.save_weights('autoencoder_weights_v{args.version}.h5')
+    autoencoder.save_weights(f'autoencoder_weights_v{args.version}.h5')

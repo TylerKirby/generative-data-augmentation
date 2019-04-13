@@ -63,6 +63,8 @@ if __name__ == "__main__":
 
     generator = build_generator()
     discriminator = build_discriminator()
+
+    generator.summary()
     
     generator.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
     discriminator.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
