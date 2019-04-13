@@ -1,13 +1,14 @@
+import argparse
+
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # x must be a 100x1 vector sampled from a normal distribution
 def generator(x):
-    i = layers.Input(shape=(32,32,3))
-    x = layers.Dense(1024, activation='tanh')(x)
-    x = layers.Dense(128*7*7)(x)
+    x = layers.Dense(128*8*8, input_dim=100, activation='tanh')(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Activation('tanh')(x)
     x = layers.Reshape((8, 8, 128))(x)
     x = layers.UpSampling2D(size=(2, 2))(x)
     x = layers.Conv2D(64, (5, 5), padding='same', activation='tanh')(x)
@@ -18,8 +19,8 @@ def generator(x):
     return x
 
 def build_generator():
-    i = layers.Input(shape=(100,1,1))
-    o = generator(o)
+    i = layers.Input(shape=(100,))
+    o = generator(i)
     return tf.keras.Model(i, o)
 
 def discriminator(x):
@@ -38,9 +39,50 @@ def build_discriminator():
     return tf.keras.Model(i, o)
 
 
+def build_dcgan(generator, discriminator):
+    dcgan = tf.keras.models.Sequential()
+    dcgan.add(generator)
+    discriminator.trainable = True
+    dcgan.add(discriminator)
+    return dcgan
+
+
 if __name__ == "__main__":
-    i = layers.Input(shape=(32,32,3))
-    o = discriminator(i)
-    g = tf.keras.Model(i, o)
-    g.summary()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--epochs', '-e', type=int, default=1)
+    parser.add_argument('--batch_size', '-bs', type=int, default=5)
+    args = parser.parse_args()
+
+    real_images = ImageDataGenerator().flow_from_directory(
+        'images_to_spoof',
+        target_size=(32,32),
+        class_mode=None,
+        batch_size=args.batch_size
+    )
+
+    generator = build_generator()
+    discriminator = build_discriminator()
+    
+    generator.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
+    discriminator.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
+
+    dcgan = build_dcgan(generator, discriminator)
+    dcgan.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam())
+
+    for i in range(args.epochs):
+        noise = np.random.rand(args.batch_size, 100)
+        real_image_batch = real_images.next()
+        generated_images = generator.predict(noise, batch_size=args.batch_size)
+        X = np.concatenate([generated_images, real_image_batch])
+        y = [0]*args.batch_size + [1]*args.batch_size
+        discriminator.trainable = True
+        discriminator.train_on_batch(X, y)
+        noise = np.random.rand(args.batch_size, 100)
+        y_generator = [1]*args.batch_size
+        discriminator.trainable = False
+        dcgan.train_on_batch(noise, y_generator)
+
+    print('finished training')
+
+    
 

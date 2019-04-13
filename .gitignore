@@ -4,3 +4,4 @@ venv/
 .vscode/
 test/
 train/
+images_to_spoof/
