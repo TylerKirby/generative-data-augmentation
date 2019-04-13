@@ -31,7 +31,9 @@ def sampling(args):
 
     z_mean, z_log_var = args
     batch = K.shape(z_mean)[0]
-    dim = K.int_shape(z_mean)[1]
+   
+    dim = K.int_shape(z_mean)[1] 
+	
     # by default, random_normal has mean = 0 and std = 1.0
     epsilon = K.random_normal(shape=(batch, dim))
     return z_mean + K.exp(0.5 * z_log_var) * epsilon
@@ -105,14 +107,10 @@ x_train = train_data_generator.flow_from_directory('train', target_size=(32,32),
 x_test = test_data_generator.flow_from_directory('test', target_size=(32,32), class_mode=None, batch_size=16)
 y_test = test_data_generator.flow_from_directory('test', target_size=(32,32), class_mode=None, batch_size=16)
 
-image_size =32
-original_dim = image_size * image_size
 
-# network parameters
-input_shape = (original_dim, )
 intermediate_dim = 512
 batch_size = 128
-latent_dim = 2
+latent_dim = 16
 epochs = 50
 
 # VAE model = encoder + decoder
@@ -134,7 +132,7 @@ encoder.summary()
 # build decoder model
 latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
 x = Dense(intermediate_dim, activation='relu')(latent_inputs)
-outputs = Dense(original_dim, activation='sigmoid')(x)
+outputs = Dense((3), activation='sigmoid')(x)
 
 # instantiate decoder model
 decoder = Model(latent_inputs, outputs, name='decoder')
@@ -164,7 +162,7 @@ if __name__ == '__main__':
         reconstruction_loss = binary_crossentropy(inputs,
                                                   outputs)
 
-    reconstruction_loss *= original_dim
+    reconstruction_loss *= 3
     kl_loss = 1 + z_log_var - K.square(z_mean) - K.exp(z_log_var)
     kl_loss = K.sum(kl_loss, axis=-1)
     kl_loss *= -0.5
