@@ -61,20 +61,23 @@ if __name__ == "__main__":
 
     autoencoder = autoencoder()
     autoencoder.summary()
-    autoencoder.compile(optimizer='adam', loss='mse')
+    autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
     df = pd.read_pickle('data/mnist_set.pkl')
     X_train = df.drop('y', axis=1).values.reshape(9100, 28, 28, 1)
+    X_train = X_train.astype('float32') / 255
 
-    training_data = ImageDataGenerator(rescale=1./255).flow(
-        X_train, 
-        X_train, 
-        batch_size=args.batch_size
-    )
-
-    autoencoder.fit_generator(
-        training_data,
-        epochs=args.epochs
+    autoencoder.fit(
+        X_train,
+        X_train,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        callbacks=[
+            tf.keras.callbacks.EarlyStopping(
+                monitor='loss',
+                patience=10
+            )
+        ]
     )
 
 
