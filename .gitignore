@@ -6,3 +6,4 @@ test/
 train/
 images_to_spoof/
 __pycache__
+logs/
