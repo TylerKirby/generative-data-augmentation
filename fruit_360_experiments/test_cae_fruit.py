@@ -8,13 +8,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 
 if __name__ == '__main__':
-    with open('autoencoder_architecture_v1.json', 'r') as f:
+    with open('weights/autoencoder_fruits_architecture_v1.json', 'r') as f:
         cae = tf.keras.models.model_from_json(f.read())
-    cae.load_weights('autoencoder_weights_v1.h5')
+    cae.load_weights('weights/autoencoder_fruits_weights_v1.h5')
     encoder = cae.layers[0]
 
     testing_data = ImageDataGenerator(rescale=1./255).flow_from_directory(
-        'test',
+        'data/fruit_samples',
         target_size=(32,32),
         class_mode='categorical',
     )

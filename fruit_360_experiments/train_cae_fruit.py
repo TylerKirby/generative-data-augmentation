@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', '-v', type=int, required=True)
     parser.add_argument('--epochs', '-e', type=int, default=1)
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--batch_size', '-bs', type=int, default=16)
     parser.add_argument('--image_size', type=int, default=32)
     parser.add_argument('--latent_vector_size', type=int, default=16)
     args = parser.parse_args()
@@ -61,28 +61,20 @@ if __name__ == "__main__":
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
     train_data_generator = ImageDataGenerator(rescale=1./255)
-    test_data_generator = ImageDataGenerator(rescale=1./255)
 
     training_data = train_data_generator.flow_from_directory(
-        'train',
+        'data/fruit_samples',
         target_size=(32,32),
         class_mode='input',
-        batch_size=16
+        batch_size=args.batch_size
     )
-    testing_data = test_data_generator.flow_from_directory(
-        'test',
-        target_size=(32,32),
-        class_mode=None,
-        batch_size=16
-    )
-
     autoencoder.fit_generator(
         training_data,
         steps_per_epoch=10,
         epochs=args.epochs
     )
 
-    autoencoder.save_weights(f'autoencoder_weights_v{args.version}.h5')
+    autoencoder.save_weights(f'weights/autoencoder_fruits_weights_v{args.version}.h5')
 
-    with open(f'autoencoder_architecture_v{args.version}.json', 'w') as f:
+    with open(f'weights/autoencoder_fruits_architecture_v{args.version}.json', 'w') as f:
         f.write(autoencoder.to_json())

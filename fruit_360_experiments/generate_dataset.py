@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--ts_split', type=float, default=0.8, help='Specify size of training/test split')
     parser.add_argument('--class_size', type=int, default=1000, help='Specify number of examples for each class')
+    parser.add_argument('--small_class', type=str, default='plums')
     args = parser.parse_args()
 
     base_classes = {
@@ -48,14 +49,13 @@ if __name__ == '__main__':
         for subclass in v:
             subclass_image_paths = [TRAINING_PATH+subclass+'/'+f for f in os.listdir(TRAINING_PATH+subclass)]
             image_paths.extend(subclass_image_paths)
-        sample = random.sample(image_paths, args.class_size)
-        train, test = train_test_split(sample, train_size=args.ts_split)
-        os.makedirs(f'{os.getcwd()}/train/{k}')
-        os.makedirs(f'{os.getcwd()}/test/{k}')
-        for f in train:
-            shutil.copy2(f, f'{os.getcwd()}/train/{k}')
-        for f in test:
-            shutil.copy2(f, f'{os.getcwd()}/test/{k}')
+        if k == args.small_class:
+            sample = random.sample(image_paths, 50)
+        else:
+            sample = random.sample(image_paths, args.class_size)
+        os.makedirs(f'{os.getcwd()}/data/fruit_samples/{k}')
+        for f in sample:
+            shutil.copy2(f, f'{os.getcwd()}/data/fruit_samples/{k}')
     
 
 
