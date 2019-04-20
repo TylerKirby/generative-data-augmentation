@@ -8,9 +8,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 
 if __name__ == '__main__':
-    with open('weights/autoencoder_fruits_architecture_v2.json', 'r') as f:
+    with open('weights/autoencoder_fruits_architecture_v1.json', 'r') as f:
         cae = tf.keras.models.model_from_json(f.read())
-    cae.load_weights('weights/autoencoder_fruits_weights_v2.h5')
+    cae.load_weights('weights/autoencoder_fruits_weights_v1.h5')
     encoder = cae.layers[0]
 
     testing_data = ImageDataGenerator(rescale=1./255).flow_from_directory(
@@ -33,9 +33,23 @@ if __name__ == '__main__':
         latent_vectors = encoder(images).numpy()
         X.append(latent_vectors)
         y.append(labels)
-    
+
+    with open('weights/dcgan_generator_fruits_architecture_v1.json', 'r') as f:
+        generator = tf.keras.models.model_from_json(f.read())
+    generator.load_weights('weights/dcgan_generator_fruits_weights_v1.h5')
+
+    noise = np.random.rand(975, 100)
+    generated_images = generator.predict(noise)
+    # plum label = [0, 0, 0, 0, 0, 1, 0]
+    latent_of_generated = encoder(generated_images).numpy()
+
+    X.append(latent_of_generated)
+    y.append([[0, 0, 0, 0, 0, 1, 0]] * 975)
+
     X = np.concatenate(X)
     y = np.concatenate(y)
+
+    
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
     knn = KNeighborsClassifier()
@@ -44,4 +58,3 @@ if __name__ == '__main__':
     class_names = ['apples', 'cherries', 'grapes', 'peaches', 'pears', 'plums', 'tomatoes']
     metrics_report = classification_report(y_test, y_pred, target_names=class_names)
     print(metrics_report)
-

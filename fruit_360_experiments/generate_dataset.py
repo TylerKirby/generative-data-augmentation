@@ -50,7 +50,7 @@ if __name__ == '__main__':
             subclass_image_paths = [TRAINING_PATH+subclass+'/'+f for f in os.listdir(TRAINING_PATH+subclass)]
             image_paths.extend(subclass_image_paths)
         if k == args.small_class:
-            sample = random.sample(image_paths, 50)
+            sample = random.sample(image_paths, 25)
         else:
             sample = random.sample(image_paths, args.class_size)
         os.makedirs(f'{os.getcwd()}/data/fruit_samples/{k}')

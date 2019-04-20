@@ -13,9 +13,9 @@ if __name__ == '__main__':
 
     noise = np.random.rand(args.num_of_examples, 100)
 
-    with open('weights/dcgan_generator_fruits_architecture_v1.json', 'r') as f:
+    with open('weights/dcgan_generator_fruits_architecture_v2.json', 'r') as f:
         generator = tf.keras.models.model_from_json(f.read())
-    generator.load_weights('weights/dcgan_generator_fruits_weights_v1.h5')
+    generator.load_weights('weights/dcgan_generator_fruits_weights_v2.h5')
 
     generated_images = generator.predict(noise)
     plt.figure(figsize=(10,10))
