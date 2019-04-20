@@ -14,6 +14,7 @@ if __name__ == '__main__':
     df = pd.DataFrame(data=X_train)
     df['y'] = y_train
     df = df.groupby('y').apply(lambda df: df.sample(n=1000))
+    df.loc[df['y'] == 3].to_pickle('data/mnist_test.pkl')
     df = df.drop(df.query(f'y == {args.small_class}').sample(frac=0.9).index)
 
     df.to_pickle('data/mnist_set.pkl')
