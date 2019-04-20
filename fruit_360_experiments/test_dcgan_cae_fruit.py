@@ -34,24 +34,49 @@ if __name__ == '__main__':
         X.append(latent_vectors)
         y.append(labels)
 
-    with open('weights/dcgan_generator_fruits_architecture_v1.json', 'r') as f:
+    with open('weights/dcgan_generator_fruits_architecture_v2.json', 'r') as f:
         generator = tf.keras.models.model_from_json(f.read())
-    generator.load_weights('weights/dcgan_generator_fruits_weights_v1.h5')
+    generator.load_weights('weights/dcgan_generator_fruits_weights_v2.h5')
+
+    X = np.concatenate(X)
+    y = np.concatenate(y)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
     noise = np.random.rand(975, 100)
     generated_images = generator.predict(noise)
     # plum label = [0, 0, 0, 0, 0, 1, 0]
     latent_of_generated = encoder(generated_images).numpy()
 
-    X.append(latent_of_generated)
-    y.append([[0, 0, 0, 0, 0, 1, 0]] * 975)
+    X_train = np.concatenate([X_train, latent_of_generated])
+    y_train = np.concatenate([y_train, [[0, 0, 0, 0, 0, 1, 0]] * 975])
+
+    plum_test = ImageDataGenerator(rescale=1./255).flow_from_directory(
+        'data/fruit_test',
+        target_size=(32,32),
+        class_mode=None,
+    )
+    N = plum_test.n
+    iterations = 2
+
+    X = []
+    y = []
+
+    for _ in range(iterations):
+        batch = plum_test.next()
+
+        images = batch
+
+        latent_vectors = encoder(images).numpy()
+        X.append(latent_vectors)
 
     X = np.concatenate(X)
-    y = np.concatenate(y)
 
-    
+    X_test = np.concatenate([X_test, X])
+    y_test = np.concatenate([y_test, [[0, 0, 0, 0, 0, 1, 0]] * (32*iterations)])
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+
+
     knn = KNeighborsClassifier()
     knn.fit(X_train, y_train)
     y_pred = knn.predict(X_test)

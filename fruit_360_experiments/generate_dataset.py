@@ -50,12 +50,22 @@ if __name__ == '__main__':
             subclass_image_paths = [TRAINING_PATH+subclass+'/'+f for f in os.listdir(TRAINING_PATH+subclass)]
             image_paths.extend(subclass_image_paths)
         if k == args.small_class:
-            sample = random.sample(image_paths, 25)
+            sample = random.sample(image_paths, 1000)
+            test = sample[:950]
+            train = sample[950:]
+            os.makedirs(f'{os.getcwd()}/data/fruit_samples/plums')
+            for f in train:
+                shutil.copy2(f, f'{os.getcwd()}/data/fruit_samples/plums')
+            os.makedirs(f'{os.getcwd()}/data/fruit_test/plums')
+            for f in test:
+                shutil.copy2(f, f'{os.getcwd()}/data/fruit_test/plums')
+            
+
         else:
             sample = random.sample(image_paths, args.class_size)
-        os.makedirs(f'{os.getcwd()}/data/fruit_samples/{k}')
-        for f in sample:
-            shutil.copy2(f, f'{os.getcwd()}/data/fruit_samples/{k}')
+            os.makedirs(f'{os.getcwd()}/data/fruit_samples/{k}')
+            for f in sample:
+                shutil.copy2(f, f'{os.getcwd()}/data/fruit_samples/{k}')
     
 
 
